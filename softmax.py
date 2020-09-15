@@ -5,6 +5,8 @@ import numpy as np
 
 def softmax_crossentropy(logits, reference_answers):
     """
+    Loss Function (Log softmax) which is better than softmax on his own.
+    - Better numerical stability...
         Crossentropy from logits and ids of correct answers
 
         :param logits: data of shape [batch, n_classes]

@@ -1,9 +1,71 @@
 # coding: utf-8
 
 import numpy as np
+from softmax import softmax_crossentropy
+from softmax import grad_softmax_crossentropy
 
+
+def train(network, X, y):
+    """
+    Train our network on a test set X and Y.
+    Activate all layers
+    Backward prop from last to first so that Dense layers have already one gradient step
+
+    :param network: list of network
+    :param X: set of data
+    :param y: result matching X
+    :return:
+    """
+    layer_activations = forward(network, X)
+    layer_inputs = [X] + layer_activations  # layer_input[i] is an input for network[i]
+    logits = layer_activations[-1]
+
+    # Compute the loss and the initial gradient
+    loss = softmax_crossentropy(logits, y)
+    loss_grad = grad_softmax_crossentropy(logits, y)
+
+    # Propagate gradients through the network & Reverse propogation as this is backprop
+    for layer_index in range(len(network))[::-1]:
+        layer = network[layer_index]
+        loss_grad = layer.backward(layer_inputs[layer_index], loss_grad)  # grad w.r.t. input, also weight updates
+
+    return np.mean(loss)
+
+
+def predict(network, X):
+    """
+    Make predictions
+
+    :param network: list of network
+    :param X: set of data
+    :return: largest prob
+    """
+    logits = forward(network,X)[-1]
+    return logits.argmax(axis=-1)
+
+
+def forward(network, X):
+    """
+    Activate all networks by applying them sequentially
+
+    :param network: list of network
+    :param X: set of data
+    :return:
+    """
+    activations = []
+    input = X
+    for l in network:
+        activations.append(l.forward(input))  # Update to next
+        input = activations[-1]
+
+    assert len(activations) == len(network)
+    return activations
 
 class Layer:
+    """
+    Each Layer has be able to perform a pass forward and a pass backward.
+    So we have here our main class doing either backward or forward
+    """
     def __init__(self):
         pass
 
@@ -31,6 +93,9 @@ class Layer:
 
 
 class ReLU(Layer):
+    """
+    Applies non linearity to every element of the network
+    """
     def __init__(self):
         pass
 
@@ -51,6 +116,9 @@ class ReLU(Layer):
 
 
 class Dense(Layer):
+    """
+    This Layer is an Hidden one. It applies an affine transformation
+    """
     def __init__(self, input_units, output_units, learning_rate=0.1):
         """
         Layer performing a learned affine transformation (f(x) = <W*x> + b)
@@ -86,13 +154,13 @@ class Dense(Layer):
         :param grad_output:
         :return:
         """
-        grad_input = np.dot(grad_output, self.weights.T)
+        grad_input = np.dot(grad_output, self.weights.T) # d dense/ d x = weights transposed
 
-        grad_weights = np.dot(input.T, grad_output)
+        grad_weights = np.dot(input.T, grad_output) # gradient on weights and biases
         grad_biases = grad_output.mean(axis=0) * input.shape[0]
         assert grad_weights.shape == self.weights.shape and grad_biases.shape == self.biases.shape
 
-        self.weights = self.weights - self.learning_rate * grad_weights
+        self.weights = self.weights - self.learning_rate * grad_weights # stochastic gradient descent
         self.biases = self.biases - self.learning_rate * grad_biases
 
         return grad_input
