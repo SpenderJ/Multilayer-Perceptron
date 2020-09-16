@@ -3,6 +3,7 @@
 from utils import safe_opener
 from sklearn.model_selection import train_test_split
 from multilayerperceptron import *
+from sklearn.preprocessing import MinMaxScaler
 
 csv_file = "resources\\data.csv"
 
@@ -26,13 +27,16 @@ def training():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42)
 
     # Normalize
-    X_test = X_test.to_numpy()
-    X_train = X_train.to_numpy()
+    # X_test = X_test.to_numpy()
+    # X_train = X_train.to_numpy()
+    min_max_scaler = MinMaxScaler()
+    X_train = min_max_scaler.fit_transform(X_train.values)
+    X_test = min_max_scaler.fit_transform(X_test.values)
     y_train = y_train.to_numpy()
     y_test = y_test.to_numpy()
 
-    X_train = X_train.astype(float) / 255.
-    X_test = X_test.astype(float) / 255.
+    X_train = X_train.astype(float)
+    X_test = X_test.astype(float)
     y_train = y_train.astype(int)
     y_test = y_test.astype(int)
 
