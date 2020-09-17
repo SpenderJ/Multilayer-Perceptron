@@ -45,11 +45,12 @@ def training():
     # Creation of the network
 
     network = []
-    network.append(Dense(X_train.shape[1], 20))
+    network.append(Dense(X_train.shape[1], 50))
     network.append(ReLU())
-    network.append(Dense(20, 40))
+    network.append(Dense(50, 100))
     network.append(ReLU())
-    network.append(Dense(40, 2))
+    network.append(Dense(100, 2))
+    network.append(Sigmoid())
 
     # Train the model + Perfs and graphs
 

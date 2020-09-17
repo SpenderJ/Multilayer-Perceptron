@@ -44,6 +44,18 @@ def predict(network, X):
     return logits.argmax(axis=-1)
 
 
+def predict_probas(network, X):
+    """
+    Make predictions
+
+    :param network: list of network
+    :param X: set of data
+    :return: largest prob
+    """
+    logits = forward(network, X)[-1]
+    return logits
+
+
 def forward(network, X):
     """
     Activate all networks by applying them sequentially
@@ -92,6 +104,28 @@ class Layer:
         return np.dot(grad_output, d_layer_d_input)
 
 
+class tanh(Layer):
+    """
+    Applies non linearity to every element of the network
+    """
+    def __init__(self):
+        pass
+
+    def forward(self, input):
+        """
+        Apply elementwise Hyperbolic tangent function to [batch, input_units] matrix
+        :param input: data of shape [batch, input_units]
+        :return: input
+        """
+        relu_forward = np.tanh(input)
+        return relu_forward
+
+    def backward(self, input, grad_output):
+        # Compute tahn gradient of loss on input
+        A = np.tanh(input)
+        return grad_output * (1 - np.square(A))
+
+
 class ReLU(Layer):
     """
     Applies non linearity to every element of the network
@@ -102,7 +136,6 @@ class ReLU(Layer):
     def forward(self, input):
         """
         Apply elementwise ReLU to [batch, input_units] matrix
-
         :param input: data of shape [batch, input_units]
         :return: input
         """
@@ -110,9 +143,32 @@ class ReLU(Layer):
         return relu_forward
 
     def backward(self, input, grad_output):
-        # Compute gradient of loss w.r.t. ReLU input
+        # Compute ReLU gradient of loss on input
         relu_grad = input > 0
         return grad_output * relu_grad
+
+
+class Sigmoid(Layer):
+    """
+    Applies non linearity to every element of the network
+    """
+    def __init__(self):
+        pass
+
+    def forward(self, input):
+        """
+        Apply elementwise Sigmoid to [batch, input_units] matrix
+
+        :param input: data of shape [batch, input_units]
+        :return: input
+        """
+        relu_forward = 1 / (1 + np.exp(-input))
+        return relu_forward
+
+    def backward(self, input, grad_output):
+        # Compute sigmoid gradient of loss on input
+        A = 1 / (1 + np.exp(-input))
+        return grad_output * A * (1 - A)
 
 
 class Dense(Layer):

@@ -42,14 +42,17 @@ def data_manipulation(data, prediction):
 
         return X_train, X_test, y_train, y_test
     elif prediction:
-        X = data
+        y = data.iloc[:, 1]
+        X = data.drop(data.columns[1], axis=1)
+
+        y = y.to_numpy().astype(int)
 
         # Normalize
         min_max_scaler = MinMaxScaler()
         X = min_max_scaler.fit_transform(X.values)
         X = X.astype(float)
         X = X.reshape([X.shape[0], -1])
-        return X
+        return X, y
 
 
 def safe_opener(file):
